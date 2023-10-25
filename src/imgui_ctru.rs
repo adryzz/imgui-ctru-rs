@@ -1,7 +1,7 @@
 use std::time::Duration;
-use ctru::applets::swkbd::{Swkbd, Kind, Button};
+use ctru::applets::swkbd::{Kind, Button, SoftwareKeyboard};
 use ctru::prelude::KeyPad;
-use ctru::services::Hid;
+use ctru::services::hid::Hid;
 use imgui::{BackendFlags, ConfigFlags, Context, Io, Key, MouseButton};
 
 pub fn init(imgui: &mut Context) {
@@ -9,7 +9,7 @@ pub fn init(imgui: &mut Context) {
     // turn off filesystem stuff
     imgui.set_ini_filename(None);
     imgui.set_log_filename(None);
-    let mut io = imgui.io_mut();
+    let io = imgui.io_mut();
 
     // configure input devices
     io.config_flags |= ConfigFlags::IS_TOUCH_SCREEN;
@@ -19,14 +19,14 @@ pub fn init(imgui: &mut Context) {
 
     imgui.set_platform_name("3DS".to_string());
 
-    let mut style = imgui.style_mut();
+    let style = imgui.style_mut();
 
     // turn off window rounding
     style.window_rounding = 0.0;
 }
 
 pub fn new_frame(imgui: &mut Context, hid: &mut Hid, delta_time: Duration) {
-    let mut io = imgui.io_mut();
+    let io = imgui.io_mut();
     // set time delta
     io.update_delta_time(delta_time);
 
@@ -57,7 +57,7 @@ pub fn update_touch(hid: &mut Hid, io: &mut Io) {
 }
 
 pub fn update_gamepads(hid: &mut Hid, io: &mut Io) {
-    const mapping: [(KeyPad, Key); 12] = [
+    const MAPPING: [(KeyPad, Key); 12] = [
         (KeyPad::A, Key::GamepadFaceDown),
         (KeyPad::B, Key::GamepadFaceRight),
         (KeyPad::X, Key::GamepadFaceUp),
@@ -76,7 +76,7 @@ pub fn update_gamepads(hid: &mut Hid, io: &mut Io) {
     let down = hid.keys_down();
     let up = hid.keys_up();
 
-    for pair in mapping {
+    for pair in MAPPING {
         if up.contains(pair.0) {
             io.add_key_event(pair.1, false);
         } else if down.contains(pair.0) {
@@ -103,10 +103,9 @@ pub fn update_gamepads(hid: &mut Hid, io: &mut Io) {
 }
 
 pub fn update_keyboard(imgui: &mut Context) {
-    let mut kbd = Swkbd::new(Kind::Normal, 2);
+    let mut kbd = SoftwareKeyboard::new(Kind::Normal, 2);
     kbd.configure_button(Button::Left, "Cancel", false);
     kbd.configure_button(Button::Right, "OK", true);
     // todo: set keyboard initial text when ctru-rs supports it
-
     todo!()
 }

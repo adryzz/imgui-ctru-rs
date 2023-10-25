@@ -10,4 +10,4 @@ citro3d = { git = "https://github.com/rust3ds/citro3d-rs", version = "0.1.0" }
 citro3d-sys = { git = "https://github.com/rust3ds/citro3d-rs", version = "0.1.0" }
 ctru-rs = { git = "https://github.com/rust3ds/ctru-rs", version = "0.7.1" }
 ctru-sys = { git = "https://github.com/rust3ds/ctru-rs", version = "22.2.0" }
-imgui = {path = "../imgui-rs/imgui"}
+imgui = { git = "https://github.com/imgui-rs/imgui-rs" } # unreleased version
