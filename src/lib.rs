@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use ctru::services::apt::Apt;
 use ctru::services::gfx::Gfx;
@@ -12,6 +12,7 @@ pub struct CtrPlatform<'a> {
     context: &'a mut Context,
     hid: &'a mut Hid,
     gfx: &'a mut Gfx,
+    last_frame: Instant,
 }
 
 impl<'a> CtrPlatform<'a> {
@@ -34,20 +35,34 @@ impl<'a> CtrPlatform<'a> {
         // turn off window rounding
         style.window_rounding = 0.0;
 
-        Self { context, hid, gfx }
+        Self {
+            context,
+            hid,
+            gfx,
+            last_frame: Instant::now(),
+        }
     }
 
-    pub fn prepare_frame(&mut self, apt: &mut Apt, delta_time: Duration) {
+    pub fn prepare_frame(&mut self, apt: &mut Apt) -> &mut Ui {
+        self.hid.scan_input();
         let io = self.context.io_mut();
+
         // set time delta
-        io.update_delta_time(delta_time);
+        let now = Instant::now();
+        io.update_delta_time(now - self.last_frame);
+        self.last_frame = now;
 
         imgui_ctru::update_touch(self.hid, io);
         imgui_ctru::update_gamepads(self.hid, io);
         imgui_ctru::update_keyboard(self.context, apt, self.gfx);
+
+        self.context.new_frame()
     }
 
-    pub fn prepare_render(&mut self, ui: &Ui, window: &Window<&str>) {
+    pub fn prepare_render(&mut self, ui: &Ui) {
+        let data = self.context.render();
         // TODO: renderer
+
+        self.gfx.wait_for_vblank();
     }
 }
