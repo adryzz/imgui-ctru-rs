@@ -1,39 +1,9 @@
-use std::time::Duration;
-use ctru::applets::swkbd::{Kind, Button, SoftwareKeyboard};
+use ctru::applets::swkbd::{Button, ButtonConfig, Kind, SoftwareKeyboard};
 use ctru::prelude::KeyPad;
+use ctru::services::apt::Apt;
+use ctru::services::gfx::Gfx;
 use ctru::services::hid::Hid;
-use imgui::{BackendFlags, ConfigFlags, Context, Io, Key, MouseButton};
-
-pub fn init(imgui: &mut Context) {
-
-    // turn off filesystem stuff
-    imgui.set_ini_filename(None);
-    imgui.set_log_filename(None);
-    let io = imgui.io_mut();
-
-    // configure input devices
-    io.config_flags |= ConfigFlags::IS_TOUCH_SCREEN;
-    io.config_flags |= ConfigFlags::NAV_ENABLE_GAMEPAD;
-    io.backend_flags |= BackendFlags::HAS_GAMEPAD;
-    io.mouse_draw_cursor = false;
-
-    imgui.set_platform_name("3DS".to_string());
-
-    let style = imgui.style_mut();
-
-    // turn off window rounding
-    style.window_rounding = 0.0;
-}
-
-pub fn new_frame(imgui: &mut Context, hid: &mut Hid, delta_time: Duration) {
-    let io = imgui.io_mut();
-    // set time delta
-    io.update_delta_time(delta_time);
-
-    update_touch(hid, io);
-    update_gamepads(hid, io);
-    //update_keyboard(io);
-}
+use imgui::{Context, Io, Key, MouseButton};
 
 pub fn update_touch(hid: &mut Hid, io: &mut Io) {
     if hid.keys_up().contains(KeyPad::TOUCH) {
@@ -92,7 +62,7 @@ pub fn update_gamepads(hid: &mut Hid, io: &mut Io) {
         (analog.0, Key::GamepadLStickLeft, -0.3, -0.9),
         (analog.0, Key::GamepadLStickRight, 0.3, 0.9),
         (analog.1, Key::GamepadLStickUp, 0.3, 0.9),
-        (analog.1, Key::GamepadLStickDown, -0.3, -0.9)
+        (analog.1, Key::GamepadLStickDown, -0.3, -0.9),
     ];
 
     for pair in analog_mapping {
@@ -102,10 +72,17 @@ pub fn update_gamepads(hid: &mut Hid, io: &mut Io) {
     }
 }
 
-pub fn update_keyboard(imgui: &mut Context) {
-    let mut kbd = SoftwareKeyboard::new(Kind::Normal, 2);
+pub fn update_keyboard(imgui: &mut Context, apt: &mut Apt, gfx: &mut Gfx) {
+    if !imgui.io().want_text_input {
+        return;
+    }
+    let mut kbd = SoftwareKeyboard::new(Kind::Normal, ButtonConfig::LeftRight);
     kbd.configure_button(Button::Left, "Cancel", false);
     kbd.configure_button(Button::Right, "OK", true);
-    // todo: set keyboard initial text when ctru-rs supports it
-    todo!()
+    imgui.io_mut();
+    // TODO: set keyboard initial text somehow?
+    // kbd.set_initial_text()
+
+    // TODO: set keyboard output somehow
+    //kbd.get_string(max_bytes, apt, gfx);
 }

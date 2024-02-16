@@ -1,7 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
 fn main() {
-
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let mut shader_path = PathBuf::from(&manifest_dir);
     shader_path.push("src");
@@ -15,7 +14,6 @@ fn main() {
     println!("cargo:rustc-env=VSHADER_BIN_PATH={}", out_path.display());
 
     std::fs::create_dir_all(out_path.parent().unwrap()).unwrap();
-
 
     let mut cmd = Command::new("picasso");
     cmd.arg(shader_path).arg("--out").arg(out_path);
